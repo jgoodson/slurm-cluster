@@ -3,7 +3,11 @@
   hosts: [ipaserver, ipareplica, ipaclient]
   become: true
   tasks:
-    - import_tasks: tasks/remove_localname.yml
+    - name: Remove local hostname local IP mapping
+      lineinfile:
+        path: /etc/hosts
+        state: absent
+        regexp: '^(127\.0\.0\.1|::1) (?!localhost)'
 
 - name: Configure IPA Server
   hosts: ipaserver
