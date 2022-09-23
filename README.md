@@ -25,3 +25,12 @@
     - `ansible-playbook -v -i vm_inventory/ config_nfs.yml`
         - Installs and configures NFS with Kerberos authentication on both server and clients
         - Utilizes FreeIPA SSSD distribution of automounts for /mnt/data and /home
+
+### Todo
+
+- Determine IP address from machine to allow DHCP
+    - Alternatively, configure a DNS server outside of FreeIPA to resolve DHCP VMs, somehow?
+- Deal with pam_mkhomedir integration with automounted homedir
+    - Alternatively, somehow make IPA user creation make an NFS homedir for new users so it doesn't have to be done manually
+- CLOOOOUUUUUUUD
+    - Setup a cluster with ParallelCluster, Bath, or some other tool and integrate it with this one
