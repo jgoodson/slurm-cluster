@@ -10,6 +10,7 @@
     vmid: "{{ template_id }}"
     newid: "{{ new_vm_id }}"
     storage: "{{ vm_storage_location }}"
+    scsi: "{{ vm_scsi }}"
     timeout: 120
 
 - name: Configure VM
@@ -19,8 +20,8 @@
     api_host: "{{ proxmox_api_host }}"
     api_password: "{{ proxmox_api_password }}"
     name: "{{ vm_name }}"
-    vm_cores: "{{ vm_cores }}"
-    vm_memory: "{{ vm_memory }}"
+    cores: "{{ vm_cores }}"
+    memory: "{{ vm_memory }}"
     nameservers: "{{ vm_name_servers }}"
     searchdomains: "{{ vm_search_domains}}"
     ipconfig:

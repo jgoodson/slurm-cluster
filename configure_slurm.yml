@@ -4,7 +4,6 @@
   become: true
   vars_files:
     - vault.yml
-    - group_vars/slurm.yml
   roles: 
     - role: scicore.slurm
       state: present
