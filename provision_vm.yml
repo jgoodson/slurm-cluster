@@ -66,6 +66,20 @@
         vm_ip_address: "10.0.2.2/16"
         vm_gateway: "10.0.0.1"
         inventory_types: ["ipaclient", "slurm_submit_hosts", "slurm"]
+    # Slurm NFS Share VM
+    - name: Create NFS VM
+      include_role:
+        name: proxmox_kvm
+      vars:
+        proxmox_api_password: "{{ api_password }}"
+        vm_name: "nfs1.cluster.local"
+        template_id: 9002
+        new_vm_id: 1201
+        vm_cores: 2
+        vm_memory: 2048
+        vm_ip_address: "10.0.3.1/16"
+        vm_gateway: "10.0.0.1"
+        inventory_types: ["ipaclient", "nfs"]
     # Client VMs
     - name: Create Client VM
       include_role:

@@ -1,0 +1,70 @@
+---
+- name: Configure NFS Server
+  hosts: nfs
+  become: true
+  pre_tasks:
+  - name: Partition storage drive
+    community.general.parted:
+      device: /dev/vda
+      number: 1
+      flags: [lvm]
+      state: present
+  - name: Create storage filesystem
+    community.general.filesystem:
+      fstype: ext4
+      dev: /dev/vda1
+      state: present
+  - name: Ensure mount point is present
+    ansible.builtin.file:
+      path: /mnt/storage
+      state: directory
+  - name: Mount storage filesystem
+    ansible.posix.mount:
+      fstype: ext4
+      src: /dev/vda1
+      path: /mnt/storage
+      state: mounted
+  - name: Ensure NFS mount points are present
+    ansible.builtin.file:
+      path: "/mnt/storage/{{ item }}"
+      state: directory
+    loop:
+      - "homes"
+      - "data"
+  roles: 
+    - role: geerlingguy.nfs
+      state: present
+      vars:
+        nfs_exports: [
+          "/mnt/storage/homes *(rw,sync,no_root_squash,sec=sys:krb5)",
+          "/mnt/storage/data *(rw,sync,no_root_squash,sec=sys:krb5)"]
+- name: Configure automounts
+  hosts: ipaserver
+  become: true
+  vars_files:
+    - vault.yml
+  tasks:
+    # Ensure service is present
+    - freeipa.ansible_freeipa.ipaservice:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: nfs/nfs1.cluster.local
+        state: present
+    - name: ensure a automount location named NFS exists
+      freeipa.ansible_freeipa.ipaautomountlocation:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: nfs
+        state: present
+    - name: ensure map named auto.NFS in location NFS is created
+      freeipa.ansible_freeipa.ipaautomountmap:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: auto.nfs
+        location: nfs
+        desc: "this is a map for servers with NFS"
+    - name: Create storage mount key
+      freeipa.ansible_freeipa.ipaautomountkey:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        location: NFS
+        mapname: auto.nfs
+        key: /mnt/data
+        info: nfs1.cluster.local:/mnt/storage/data
+        state: present
