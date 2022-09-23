@@ -22,15 +22,12 @@
     - `ansible-playbook -v -i vm_inventory/ configure_slurm.yml`
         - Sets up a DNS SRV record and builds a slurm cluster with "configless" clients
 - Set up NFS network automounts
+    - Add a VirtualIO drive to the nfs1 VM for storage
     - `ansible-playbook -v -i vm_inventory/ config_nfs.yml`
-<<<<<<< HEAD
         - Sets up storage and installs NFS server
         - Configures NFS with Kerberos authentication on both server and clients
         - Sets up FreeIPA SSSD distribution of automounts for /mnt/data and /home
-=======
-        - Installs and configures NFS with Kerberos authentication on both server and clients
-        - Utilizes FreeIPA SSSD distribution of automounts for /mnt/data and /home
->>>>>>> e151c01dc69cd6efa60c49bda3d414563ddbd7a3
+
 
 ### Todo
 
@@ -39,13 +36,10 @@
 - Deal with pam_mkhomedir integration with automounted homedir
     - Alternatively, somehow make IPA user creation make an NFS homedir for new users so it doesn't have to be done manually
 - CLOOOOUUUUUUUD
-<<<<<<< HEAD
     - Setup a cluster with ParallelCluster, Bath, or some other tool and integrate it with this one
 - Automate more things
     - Promox setup?
     - Router/utility box provisioning?
+    - Figure out how to automate creation of a second VHD (adding it in the proxmox_kvm task didn't seem to take)
 - Clean up template and make cloud-init work properly
     - Right now all my hosts have the same SSH host keys because my change to cloud-init config didn't do what I thought it would
-=======
-    - Setup a cluster with ParallelCluster, Bath, or some other tool and integrate it with this one
->>>>>>> e151c01dc69cd6efa60c49bda3d414563ddbd7a3
