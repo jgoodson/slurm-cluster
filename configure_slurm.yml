@@ -1,4 +1,18 @@
 ---
+- name: Add Slurm DNS Record to IPA DNS Zone
+  hosts: ipaserver
+  become: true
+  tasks:
+    - freeipa.ansible_freeipa.ipadnsrecord:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: _slurmctld._tcp
+        zone_name: cluster.local
+        record_type: "SRV"
+        srv_port: 6817
+        srv_weight: 0
+        srv_priority: 0
+        srv_target: slurmd.cluster.local
+
 - name: Configure Slurm Cluster
   hosts: slurm
   become: true
