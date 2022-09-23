@@ -1,0 +1,12 @@
+---
+- name: Configure Slurm Cluster
+  hosts: slurm
+  become: true
+  vars_files:
+    - vault.yml
+    - group_vars/slurm.yml
+  roles: 
+    - role: scicore.slurm
+      state: present
+  tags:
+    - server

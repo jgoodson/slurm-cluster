@@ -1,0 +1,6 @@
+---
+- name: Remove local hostname local IP mapping
+  lineinfile:
+    path: /etc/hosts
+    state: absent
+    regexp: '^(127\.0\.0\.1|::1) (?!localhost)'

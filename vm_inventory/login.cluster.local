@@ -1,0 +1,9 @@
+[ipaclient]
+login.cluster.local ansible_host=10.0.2.2 name=login.cluster.local ansible_ssh_user=rocky
+
+[slurm_submit_hosts]
+login.cluster.local ansible_host=10.0.2.2 name=login.cluster.local ansible_ssh_user=rocky
+
+[slurm]
+login.cluster.local ansible_host=10.0.2.2 name=login.cluster.local ansible_ssh_user=rocky
+

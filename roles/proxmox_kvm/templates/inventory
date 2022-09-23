@@ -1,0 +1,5 @@
+{% for inventory_type in inventory_types %}
+[{{ inventory_type }}]
+{{ vm_name }} ansible_host={{ vm_ip_address.split('/')[0] }} name={{ vm_name }} ansible_ssh_user=rocky
+
+{% endfor %}

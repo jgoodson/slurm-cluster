@@ -1,0 +1,6 @@
+[ipaclient]
+slurmd.cluster.local ansible_host=10.0.2.1 name=slurmd.cluster.local ansible_ssh_user=rocky
+
+[slurm]
+slurmd.cluster.local ansible_host=10.0.2.1 name=slurmd.cluster.local ansible_ssh_user=rocky
+

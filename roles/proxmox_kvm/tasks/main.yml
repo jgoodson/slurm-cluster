@@ -1,0 +1,43 @@
+---
+- name: Create VM
+  community.general.proxmox_kvm:
+    node: "{{ proxmox_node }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_host: "{{ proxmox_api_host }}"
+    api_password: "{{ proxmox_api_password }}"
+    name: "{{ vm_name }}"
+    clone: template
+    vmid: "{{ template_id }}"
+    newid: "{{ new_vm_id }}"
+    storage: "{{ vm_storage_location }}"
+    timeout: 120
+
+- name: Configure VM
+  community.general.proxmox_kvm:
+    node: "{{ proxmox_node }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_host: "{{ proxmox_api_host }}"
+    api_password: "{{ proxmox_api_password }}"
+    name: "{{ vm_name }}"
+    vm_cores: "{{ vm_cores }}"
+    vm_memory: "{{ vm_memory }}"
+    nameservers: "{{ vm_name_servers }}"
+    searchdomains: "{{ vm_search_domains}}"
+    ipconfig:
+      ipconfig0: "ip={{ vm_ip_address }},gw={{ vm_gateway }}"
+    update: yes
+
+- name: Start VM
+  community.general.proxmox_kvm:
+    node: "{{ proxmox_node }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_host: "{{ proxmox_api_host }}"
+    api_password: "{{ proxmox_api_password }}"
+    name: "{{ vm_name }}"
+    state: started
+
+- name: Write Inventory
+  ansible.builtin.template:
+    src: inventory
+    dest: "vm_inventory/{{ vm_name }}"
+    

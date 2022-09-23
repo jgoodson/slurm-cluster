@@ -1,0 +1,16 @@
+---
+proxmox_node: "proxmox"
+proxmox_api_user: "ansible@pam"
+proxmox_api_host: "10.0.254.254"
+proxmox_api_password: ""
+vm_name: ""
+vm_storage_location: "local-lvm"
+template_id: 100
+new_vm_id: 1000
+vm_name_servers: ['10.0.0.1']
+vm_search_domains: ['cluster.local']
+vm_cores: 1
+vm_memory: 2048
+vm_ip_address: "dhcp"
+vm_gateway: "dhcp"
+inventory_types: ["vm"]

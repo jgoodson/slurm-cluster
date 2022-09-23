@@ -1,0 +1,39 @@
+---
+- name: Prepare hostnames
+  hosts: [ipaserver, ipareplica, ipaclient]
+  become: true
+  tasks:
+    - import_tasks: tasks/remove_localname.yml
+
+- name: Configure IPA Server
+  hosts: ipaserver
+  become: true
+  vars_files:
+    - vault.yml
+  roles: 
+    - role: freeipa.ansible_freeipa.ipaserver
+      state: present
+  tags:
+    - server
+
+- name: Configure IPA Replica
+  hosts: ipareplica
+  become: true
+  vars_files:
+    - vault.yml
+  roles: 
+    - role: freeipa.ansible_freeipa.ipareplica
+      state: present
+  tags:
+    - replica
+
+- name: Configure IPA Client
+  hosts: ipaclient
+  become: true
+  vars_files:
+    - vault.yml
+  roles: 
+    - role: freeipa.ansible_freeipa.ipaclient
+      state: present
+  tags:
+    - client

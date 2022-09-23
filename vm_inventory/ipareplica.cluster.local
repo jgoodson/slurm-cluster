@@ -1,0 +1,3 @@
+[ipareplica]
+ipareplica.cluster.local ansible_host=10.0.1.2 name=ipareplica.cluster.local ansible_ssh_user=rocky
+

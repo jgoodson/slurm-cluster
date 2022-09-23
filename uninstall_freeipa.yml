@@ -1,0 +1,33 @@
+---
+- name: Configure IPA Server
+  hosts: ipaserver
+  become: true
+  vars_files:
+    - vault.yml
+  roles: 
+    - role: freeipa.ansible_freeipa.ipaserver
+      state: absent
+  tags:
+    - server
+
+- name: Configure IPA Replica
+  hosts: ipareplica
+  become: true
+  vars_files:
+    - vault.yml
+  roles: 
+    - role: freeipa.ansible_freeipa.ipareplica
+      state: absent
+  tags:
+    - replica
+
+- name: Configure IPA Replica
+  hosts: ipaclient
+  become: true
+  vars_files:
+    - vault.yml
+  roles: 
+    - role: freeipa.ansible_freeipa.ipaclient
+      state: absent
+  tags:
+    - client

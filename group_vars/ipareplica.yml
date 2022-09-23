@@ -1,0 +1,7 @@
+---
+ipaserver_domain: cluster.local
+ipaserver_realm: CLUSTER.LOCAL
+ipareplica_no_host_dns: yes
+ipareplica_setup_dns: yes
+ipareplica_auto_forwarders: yes
+ipaclient_force_join: yes
