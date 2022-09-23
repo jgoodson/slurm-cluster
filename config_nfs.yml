@@ -31,6 +31,10 @@
     loop:
       - "homes"
       - "data"
+  - name: Copy default user homedir
+    ansible.builtin.copy:
+      src: /home/
+      dest: /mnt/storage/homes/
   roles: 
     - role: geerlingguy.nfs
       state: present
@@ -38,33 +42,70 @@
         nfs_exports: [
           "/mnt/storage/homes *(rw,sync,no_root_squash,sec=sys:krb5)",
           "/mnt/storage/data *(rw,sync,no_root_squash,sec=sys:krb5)"]
+  tags:
+    - server
+    - nfs
+
+- name: Configure NFS Service Principals
+  hosts: ipaclient
+  become: true
+  vars_files:
+    - vault.yml
+  tasks:
+      # Ensure service is present
+    - name: Create NFS Service for host
+      freeipa.ansible_freeipa.ipaservice:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: "nfs/{{ name }}"
+        state: present
+    - name: Log In
+      shell: echo "{{ ipaadmin_password }}" | kinit admin
+    - name: Store service keytab
+      shell: ipa-getkeytab -s ipamaster.cluster.local -k /etc/krb5.keytab -p nfs/{{ name }}
+    - name: Enable rpc-gssd service
+      ansible.builtin.service:
+        name: rpc-gssd
+        enabled: yes
+        state: started
+  tags:
+    - nfs
+    - client
+
 - name: Configure automounts
   hosts: ipaserver
   become: true
   vars_files:
     - vault.yml
   tasks:
-    # Ensure service is present
-    - freeipa.ansible_freeipa.ipaservice:
-        ipaadmin_password: "{{ ipaadmin_password }}"
-        name: nfs/nfs1.cluster.local
-        state: present
-    - name: ensure a automount location named NFS exists
-      freeipa.ansible_freeipa.ipaautomountlocation:
-        ipaadmin_password: "{{ ipaadmin_password }}"
-        name: nfs
-        state: present
-    - name: ensure map named auto.NFS in location NFS is created
-      freeipa.ansible_freeipa.ipaautomountmap:
-        ipaadmin_password: "{{ ipaadmin_password }}"
-        name: auto.nfs
-        location: nfs
-        desc: "this is a map for servers with NFS"
-    - name: Create storage mount key
+    - name: Create data mount key
       freeipa.ansible_freeipa.ipaautomountkey:
         ipaadmin_password: "{{ ipaadmin_password }}"
-        location: NFS
-        mapname: auto.nfs
+        location: default
+        mapname: auto.direct
         key: /mnt/data
-        info: nfs1.cluster.local:/mnt/storage/data
+        info: -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.cluster.local:/mnt/storage/data
         state: present
+    - name: Create home mount key
+      freeipa.ansible_freeipa.ipaautomountkey:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        location: default
+        mapname: auto.master
+        key: /home
+        info: fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.cluster.local:/mnt/storage/data
+        state: present
+  tags:
+    - nfs
+    - automount
+
+- name: Enable NFS Automounts
+  hosts: ipaclient
+  become: true
+  vars_files:
+    - vault.yml
+  tasks:
+    - name: Configure ipa automount
+      ansible.builtin.command: ipa-client-automount -U
+  tags:
+    - nfs
+    - client
+    - automount
