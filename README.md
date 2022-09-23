@@ -1,5 +1,8 @@
 ### Steps
 
+- Install Ansible roles/collections
+    - `ansible-galaxy install scicore.slurm`
+    - `ansible-galaxy collection install freeipa.ansible_freeipa`
 - Provision VMs
     - Setup Proxmox
     - Install and configure VyOS router VM on virtual network
