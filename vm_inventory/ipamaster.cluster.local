@@ -1,3 +1,0 @@
-[ipaserver]
-ipamaster.cluster.local ansible_host=10.0.1.1 name=ipamaster.cluster.local ansible_ssh_user=rocky
-
