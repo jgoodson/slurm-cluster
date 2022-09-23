@@ -44,7 +44,7 @@
         name: proxmox_kvm
       vars:
         proxmox_api_password: "{{ api_password }}"
-        vm_name: "slurmd.cluster.local"
+        vm_name: "slurm.cluster.local"
         template_id: 9002
         new_vm_id: 1101
         vm_cores: 4
