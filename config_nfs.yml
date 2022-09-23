@@ -32,9 +32,7 @@
       - "homes"
       - "data"
   - name: Copy default user homedir
-    ansible.builtin.copy:
-      src: /home/
-      dest: /mnt/storage/homes/
+    ansible.builtin.command: rsync -a /home/ /mnt/storage/homes/
   roles: 
     - role: geerlingguy.nfs
       state: present
@@ -82,20 +80,22 @@
         ipaadmin_password: "{{ ipaadmin_password }}"
         location: default
         mapname: auto.direct
-        key: /mnt/data
+        key: /data
         info: -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.cluster.local:/mnt/storage/data
         state: present
     - name: Create home mount key
       freeipa.ansible_freeipa.ipaautomountkey:
         ipaadmin_password: "{{ ipaadmin_password }}"
         location: default
-        mapname: auto.master
+        mapname: auto.direct
         key: /home
-        info: fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.cluster.local:/mnt/storage/data
+        info: -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.cluster.local:/mnt/storage/data
         state: present
+  when: nfs_automount
   tags:
     - nfs
     - automount
+    - keys
 
 - name: Enable NFS Automounts
   hosts: ipaclient
@@ -104,8 +104,41 @@
     - vault.yml
   tasks:
     - name: Configure ipa automount
-      ansible.builtin.command: ipa-client-automount -U
+      ansible.builtin.shell: ipa-client-automount -U; echo
+    - name: restart autofs
+      ansible.builtin.service:
+        name: autofs
+        state: restarted
+  when: nfs_automount
   tags:
+    - nfs
+    - client
+    - automount
+
+- name: Put NFS in fstab
+  hosts: ipaclient
+  become: true
+  vars_files:
+    - vault.yml
+  tasks:
+    - name: mount /home
+      ansible.posix.mount:
+        path: /home
+        src: nfs1.cluster.local:/mnt/storage/data
+        fstype: nfs4
+        opts: vers=4.2,sec=krb5,soft,rsize=8192,wsize=8192
+        state: present
+    - name: mount /data
+      ansible.posix.mount:
+        path: /data
+        src: nfs1.cluster.local:/mnt/storage/data
+        fstype: nfs4
+        opts: vers=4.2,sec=krb5,soft,rsize=8192,wsize=8192
+        state: present
+
+
+  when: not nfs_automount
+    tags:
     - nfs
     - client
     - automount

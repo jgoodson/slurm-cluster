@@ -12,6 +12,8 @@
     - `ansible-galaxy install scicore.slurm`
     - `ansible-galaxy collection install freeipa.ansible_freeipa`
     - `ansible-galaxy install geerlingguy.nfs`
+- Put the necessary secrets in `vault.yml`
+    - `ansible-vault create vault.yml`
 - Provision VMs
     - `ansible-playbook -v provision_vm.yml`
         - Autogens inventory directory for later playbooks
@@ -31,6 +33,8 @@
 
 ### Todo
 
+- Figure out why configuring network /home is preventing my original default user ssh
+    - Where is the cloud-init authorized_keys stored? Is that somehow why?
 - Determine IP address from machine to allow DHCP
     - Alternatively, configure a DNS server outside of FreeIPA to resolve DHCP VMs, somehow?
 - Deal with pam_mkhomedir integration with automounted homedir
@@ -41,5 +45,8 @@
     - Promox setup?
     - Router/utility box provisioning?
     - Figure out how to automate creation of a second VHD (adding it in the proxmox_kvm task didn't seem to take)
+    - Set up sudoers rules
 - Clean up template and make cloud-init work properly
     - Right now all my hosts have the same SSH host keys because my change to cloud-init config didn't do what I thought it would
+- Figure out why sometimes the DNS records don't get created for hosts (not consistent which ones)
+    - Running the `install_freeipa.yml` playbook seems to fix this.
