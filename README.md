@@ -15,7 +15,7 @@
 - Provision VMs
     - `ansible-playbook -v provision_vm.yml`
         - Autogens inventory directory for later playbooks
-- Install FreeIPA
+- Install FreeIPA identity management
     - `ansible-playbook -v -i vm_inventory/ install_freeipa.yml`
         - Installs FreeIPA server on the server/replica nodes and configures clients
 - Configure Slurm with scicore playbook
@@ -23,5 +23,20 @@
         - Sets up a DNS SRV record and builds a slurm cluster with "configless" clients
 - Set up NFS network automounts
     - `ansible-playbook -v -i vm_inventory/ config_nfs.yml`
-        - Installs and configures NFS with Kerberos authentication on both server and clients
-        - Utilizes FreeIPA SSSD distribution of automounts for /mnt/data and /home
+        - Sets up storage and installs NFS server
+        - Configures NFS with Kerberos authentication on both server and clients
+        - Sets up FreeIPA SSSD distribution of automounts for /mnt/data and /home
+
+### Todo
+
+- Determine IP address from machine to allow DHCP
+    - Alternatively, configure a DNS server outside of FreeIPA to resolve DHCP VMs, somehow?
+- Deal with pam_mkhomedir integration with automounted homedir
+    - Alternatively, somehow make IPA user creation make an NFS homedir for new users so it doesn't have to be done manually
+- CLOOOOUUUUUUUD
+    - Setup a cluster with ParallelCluster, Bath, or some other tool and integrate it with this one
+- Automate more things
+    - Promox setup?
+    - Router/utility box provisioning?
+- Clean up template and make cloud-init work properly
+    - Right now all my hosts have the same SSH host keys because my change to cloud-init config didn't do what I thought it would
