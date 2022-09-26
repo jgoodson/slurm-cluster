@@ -1,0 +1,12 @@
+---
+skip_list:
+ - risky-file-permissions
+ - role-name
+ - fqcn-builtins
+
+mock_modules:
+ - docker_container
+ - docker_container_info
+
+exclude_paths:
+ - ./~/.ansible/

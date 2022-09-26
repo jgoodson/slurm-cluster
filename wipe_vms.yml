@@ -1,0 +1,34 @@
+---
+- name: Provision FreeIPA Servers
+  hosts: localhost
+  tasks:
+    - name: Stop VMs
+      include_role:
+        name: proxmox_kvm
+      vars:
+        proxmox_api_password: "{{ api_password }}"
+        vm_name: "{{ item }}"
+        state: stopped
+      loop:
+        - ipamaster.cluster.local
+        - ipareplica.cluster.local
+        - login.cluster.local
+        - nfs1.cluster.local
+        - client1.cluster.local
+        - client2.cluster.local
+        - client3.cluster.local
+    - name: Delete VMs
+      include_role:
+        name: proxmox_kvm
+      vars:
+        proxmox_api_password: "{{ api_password }}"
+        vm_name: "{{ item }}"
+        state: absent
+      loop:
+        - ipamaster.cluster.local
+        - ipareplica.cluster.local
+        - login.cluster.local
+        - nfs1.cluster.local
+        - client1.cluster.local
+        - client2.cluster.local
+        - client3.cluster.local

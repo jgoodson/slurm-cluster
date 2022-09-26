@@ -12,9 +12,7 @@
 - name: Configure IPA Server
   hosts: ipaserver
   become: true
-  vars_files:
-    - vault.yml
-  roles: 
+  roles:
     - role: freeipa.ansible_freeipa.ipaserver
       state: present
   tags:
@@ -23,9 +21,7 @@
 - name: Configure IPA Replica
   hosts: ipareplica
   become: true
-  vars_files:
-    - vault.yml
-  roles: 
+  roles:
     - role: freeipa.ansible_freeipa.ipareplica
       state: present
   tags:
@@ -34,9 +30,7 @@
 - name: Configure IPA Client
   hosts: ipaclient
   become: true
-  vars_files:
-    - vault.yml
-  roles: 
+  roles:
     - role: freeipa.ansible_freeipa.ipaclient
       state: present
   tags:

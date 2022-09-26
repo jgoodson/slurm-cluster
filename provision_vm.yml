@@ -1,14 +1,6 @@
 ---
 - name: Provision FreeIPA Servers
   hosts: localhost
-  vars:
-    api_password: !vault |
-          $ANSIBLE_VAULT;1.1;AES256
-          64633464333264333930663566643634303165383165393065383331356564616263393963373439
-          3035373438356630306638356638623435623462303537660a613861386665343835396636313939
-          66363735376263656638313562643537393033653336306336643535613965373832326566623634
-          3231366639373964310a663064656662363564306338623964653339636262623362333831323630
-          3266
   tasks:
   # Master FreeIPA VM
     - name: Create Master VM
@@ -23,7 +15,8 @@
         vm_memory: 3072
         vm_ip_address: "10.0.1.1/16"
         vm_gateway: "10.0.0.1"
-        inventory_types: ["ipaserver"]
+        inventory_types: ["ipaserver", "nfsclient"]
+        state: started
   # Replica FreeIPA VM
     - name: Create Replica VM
       include_role:
@@ -37,21 +30,23 @@
         vm_memory: 3072
         vm_ip_address: "10.0.1.2/16"
         vm_gateway: "10.0.0.1"
-        inventory_types: ["ipareplica"]
+        inventory_types: ["ipareplica", "nfsclient"]
+        state: started
     # Slurm Controller VM
     - name: Create Slurm Controller VM
       include_role:
         name: proxmox_kvm
       vars:
         proxmox_api_password: "{{ api_password }}"
-        vm_name: "slurm.cluster.local"
+        vm_name: "slurmc.cluster.local"
         template_id: 9002
         new_vm_id: 1101
         vm_cores: 4
         vm_memory: 4096
         vm_ip_address: "10.0.2.1/16"
         vm_gateway: "10.0.0.1"
-        inventory_types: ["ipaclient", "slurm"]
+        inventory_types: ["ipaclient", "slurm", "nfsclient"]
+        state: started
     # Slurm Login VM
     - name: Create Slurm Login VM
       include_role:
@@ -65,8 +60,9 @@
         vm_memory: 4096
         vm_ip_address: "10.0.2.2/16"
         vm_gateway: "10.0.0.1"
-        inventory_types: ["ipaclient", "slurm_submit_hosts", "slurm"]
-    # Slurm NFS Share VM
+        inventory_types: ["ipaclient", "slurm_submit_hosts", "slurm", "nfsclient"]
+        state: started
+    # NFS Share VM
     - name: Create NFS VM
       include_role:
         name: proxmox_kvm
@@ -80,8 +76,9 @@
         vm_ip_address: "10.0.3.1/16"
         vm_gateway: "10.0.0.1"
         inventory_types: ["ipaclient", "nfs"]
+        state: started
     # Client VMs
-    - name: Create Client VM
+    - name: Create Client VM 1
       include_role:
         name: proxmox_kvm
       vars:
@@ -93,8 +90,9 @@
         vm_memory: 4096
         vm_ip_address: "10.0.200.1/16"
         vm_gateway: "10.0.0.1"
-        inventory_types: ["ipaclient", "slurm_workers", "slurm"]
-    - name: Create Client VM
+        inventory_types: ["ipaclient", "slurm_workers", "slurm", "nfsclient"]
+        state: started
+    - name: Create Client VM 2
       include_role:
         name: proxmox_kvm
       vars:
@@ -106,8 +104,9 @@
         vm_memory: 4096
         vm_ip_address: "10.0.200.2/16"
         vm_gateway: "10.0.0.1"
-        inventory_types: ["ipaclient", "slurm_workers", "slurm"]
-    - name: Create Client VM
+        inventory_types: ["ipaclient", "slurm_workers", "slurm", "nfsclient"]
+        state: started
+    - name: Create Client VM 3
       include_role:
         name: proxmox_kvm
       vars:
@@ -119,4 +118,5 @@
         vm_memory: 4096
         vm_ip_address: "10.0.200.3/16"
         vm_gateway: "10.0.0.1"
-        inventory_types: ["ipaclient", "slurm_workers", "slurm"]
+        inventory_types: ["ipaclient", "slurm_workers", "slurm", "nfsclient"]
+        state: started

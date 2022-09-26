@@ -17,6 +17,7 @@
   - name: Ensure mount point is present
     ansible.builtin.file:
       path: /mnt/storage
+      mode: 0755
       state: directory
   - name: Mount storage filesystem
     ansible.posix.mount:
@@ -27,13 +28,12 @@
   - name: Ensure NFS mount points are present
     ansible.builtin.file:
       path: "/mnt/storage/{{ item }}"
+      mode: 0755
       state: directory
     loop:
       - "homes"
       - "data"
-  - name: Copy default user homedir
-    ansible.builtin.command: rsync -a /home/ /mnt/storage/homes/
-  roles: 
+  roles:
     - role: geerlingguy.nfs
       state: present
       vars:
@@ -44,101 +44,162 @@
     - server
     - nfs
 
-- name: Configure NFS Service Principals
-  hosts: ipaclient
-  become: true
-  vars_files:
-    - vault.yml
+- name: Configure NFS-Kerberos
+  hosts: nfsclient
   tasks:
-      # Ensure service is present
-    - name: Create NFS Service for host
-      freeipa.ansible_freeipa.ipaservice:
-        ipaadmin_password: "{{ ipaadmin_password }}"
-        name: "nfs/{{ name }}"
-        state: present
-    - name: Log In
-      shell: echo "{{ ipaadmin_password }}" | kinit admin
-    - name: Store service keytab
-      shell: ipa-getkeytab -s ipamaster.cluster.local -k /etc/krb5.keytab -p nfs/{{ name }}
-    - name: Enable rpc-gssd service
-      ansible.builtin.service:
-        name: rpc-gssd
-        enabled: yes
-        state: started
-  tags:
-    - nfs
-    - client
+    - name: Configure NFS Service Principals
+      become: true
+      tags:
+        - nfs
+        - client
+      block:
+        # Ensure service is present
+        - name: Create NFS Service for host
+          freeipa.ansible_freeipa.ipaservice:
+            ipaadmin_password: "{{ ipaadmin_password }}"
+            name: "nfs/{{ name }}"
+            state: present
+        - name: Check for keytab entry
+          command: klist -t -k /etc/krb5.keytab
+          register: keytab
+          changed_when: "name not in keytab"
+        - name: Store Kerberos Prinicpal in keytab
+          block:
+            - name: Log In
+              shell: echo "{{ ipaadmin_password }}" | kinit admin
+              when: "name not in keytab"
+            - name: Store service keytab
+              command: ipa-getkeytab -s ipamaster.cluster.local -k /etc/krb5.keytab -p nfs/{{ name }}
+              when: "name not in keytab"
+            - name: Enable rpc-gssd service
+              ansible.builtin.service:
+                name: rpc-gssd
+                enabled: true
+                state: started
+        - name: Configure SELinux for NFS Home Dir
+          ansible.posix.seboolean:
+            name: use_nfs_home_dirs
+            state: true
+            persistent: true
+        - name: Prepare new default user home directory
+          ansible.builtin.file:
+            path: /export/home
+            mode: 0755
+            state: directory
+          register: new_home
+        - name: Copy default user home directory
+          ansible.builtin.copy:
+            src: /home/rocky
+            dest: /export/home/
+            remote_src: true
+            mode: preserve
+          when: new_home is changed
+        - name: Reset default user home directory
+          lineinfile:
+            path: /etc/passwd
+            regexp: rocky:x:1000:1000:Cloud User:/home/rocky:/bin/bash
+            line: rocky:x:1000:1000:Cloud User:/export/home/rocky:/bin/bash
+
 
 - name: Configure automounts
   hosts: ipaserver
-  become: true
-  vars_files:
-    - vault.yml
   tasks:
-    - name: Create data mount key
-      freeipa.ansible_freeipa.ipaautomountkey:
-        ipaadmin_password: "{{ ipaadmin_password }}"
-        location: default
-        mapname: auto.direct
-        key: /data
-        info: -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.cluster.local:/mnt/storage/data
-        state: present
-    - name: Create home mount key
-      freeipa.ansible_freeipa.ipaautomountkey:
-        ipaadmin_password: "{{ ipaadmin_password }}"
-        location: default
-        mapname: auto.direct
-        key: /home
-        info: -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.cluster.local:/mnt/storage/data
-        state: present
-  when: nfs_automount
-  tags:
-    - nfs
-    - automount
-    - keys
+    - name: Configure IPA automount setup
+      become: true
+      when: nfs_automount
+      tags:
+        - nfs
+        - automount
+        - keys
+      block:
+        - name: Create data mount key
+          freeipa.ansible_freeipa.ipaautomountkey:
+            ipaadmin_password: "{{ ipaadmin_password }}"
+            location: default
+            mapname: auto.direct
+            key: /data
+            info: -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.cluster.local:/mnt/storage/data
+            state: present
+        - name: Create home mount map
+          freeipa.ansible_freeipa.ipaautomountmap:
+            ipaadmin_password: "{{ ipaadmin_password }}"
+            location: default
+            name: auto.homes
+        - name: Create home mount key in master
+          freeipa.ansible_freeipa.ipaautomountkey:
+            ipaadmin_password: "{{ ipaadmin_password }}"
+            location: default
+            mapname: auto.master
+            key: /home
+            info: auto.homes
+            state: present
+        - name: Create default user mount key in homes
+          freeipa.ansible_freeipa.ipaautomountkey:
+            ipaadmin_password: "{{ ipaadmin_password }}"
+            location: default
+            mapname: auto.homes
+            key: rocky
+            info: /-
+            state: present
+        - name: Create homes mount key in homes
+          freeipa.ansible_freeipa.ipaautomountkey:
+            ipaadmin_password: "{{ ipaadmin_password }}"
+            location: default
+            mapname: auto.homes
+            key: '*'
+            info: -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.cluster.local:/mnt/storage/homes/&
+            state: present
 
-- name: Enable NFS Automounts
-  hosts: ipaclient
-  become: true
-  vars_files:
-    - vault.yml
+- name: Enable NFS Client Automounts
+  hosts: nfsclient
   tasks:
-    - name: Configure ipa automount
-      ansible.builtin.shell: ipa-client-automount -U; echo
-    - name: restart autofs
-      ansible.builtin.service:
-        name: autofs
-        state: restarted
-  when: nfs_automount
-  tags:
-    - nfs
-    - client
-    - automount
+    - name: Setup client automounts
+      become: true
+      when: nfs_automount
+      tags:
+        - nfs
+        - client
+        - automount
+      block:
+        - name: Check if automount configured
+          lineinfile:
+            name: /etc/idmapd.conf
+            regexp: "^DOMAIN.*=.*{{ ipaserver_domain }}"
+            state: absent
+          check_mode: true
+          register: automount_conf
+        - name: Check lininefile output
+          ansible.builtin.debug:
+            var: automount_conf
+        - name: Configure ipa automount
+          ansible.builtin.shell: ipa-client-automount -U; echo
+          when: not automount_conf.changed
+        - name: Restart autofs
+          ansible.builtin.service:
+            name: autofs
+            state: restarted
 
-- name: Put NFS in fstab
-  hosts: ipaclient
-  become: true
-  vars_files:
-    - vault.yml
+- name: Configure NFS Client for static mount
+  hosts: nfsclient
   tasks:
-    - name: mount /home
-      ansible.posix.mount:
-        path: /home
-        src: nfs1.cluster.local:/mnt/storage/data
-        fstype: nfs4
-        opts: vers=4.2,sec=krb5,soft,rsize=8192,wsize=8192
-        state: present
-    - name: mount /data
-      ansible.posix.mount:
-        path: /data
-        src: nfs1.cluster.local:/mnt/storage/data
-        fstype: nfs4
-        opts: vers=4.2,sec=krb5,soft,rsize=8192,wsize=8192
-        state: present
-
-
-  when: not nfs_automount
-    tags:
-    - nfs
-    - client
-    - automount
+    - name: Configure Client fstab
+      become: true
+      when: not nfs_automount
+      tags:
+        - nfs
+        - client
+      block:
+        - name: Mount /home
+          ansible.posix.mount:
+            path: /home
+            src: nfs1.cluster.local:/mnt/storage/homes
+            fstype: nfs4
+            opts: vers=4.2,sec=krb5,soft,rsize=8192,wsize=8192
+            state: mounted
+        - name: Mount /data
+          ansible.posix.mount:
+            path: /data
+            src: nfs1.cluster.local:/mnt/storage/data
+            fstype: nfs4
+            opts: vers=4.2,sec=krb5,soft,rsize=8192,wsize=8192
+            state: mounted

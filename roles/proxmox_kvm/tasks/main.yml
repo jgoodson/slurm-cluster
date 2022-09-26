@@ -12,6 +12,7 @@
     storage: "{{ vm_storage_location }}"
     scsi: "{{ vm_scsi }}"
     timeout: 120
+  when: state == "present" or state == "started"
 
 - name: Configure VM
   community.general.proxmox_kvm:
@@ -23,10 +24,11 @@
     cores: "{{ vm_cores }}"
     memory: "{{ vm_memory }}"
     nameservers: "{{ vm_name_servers }}"
-    searchdomains: "{{ vm_search_domains}}"
+    searchdomains: "{{ vm_search_domains }}"
     ipconfig:
       ipconfig0: "ip={{ vm_ip_address }},gw={{ vm_gateway }}"
-    update: yes
+    update: true
+  when: state == "present" or state == "started"
 
 - name: Start VM
   community.general.proxmox_kvm:
@@ -36,9 +38,42 @@
     api_password: "{{ proxmox_api_password }}"
     name: "{{ vm_name }}"
     state: started
+  when: state == "started"
 
 - name: Write Inventory
   ansible.builtin.template:
     src: inventory
     dest: "vm_inventory/{{ vm_name }}"
-    
+  when: not state == "absent"
+
+- name: Stop VM
+  community.general.proxmox_kvm:
+    node: "{{ proxmox_node }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_host: "{{ proxmox_api_host }}"
+    api_password: "{{ proxmox_api_password }}"
+    name: "{{ vm_name }}"
+    state: stopped
+  register: stop_res
+  failed_when: 
+    - '"not exist" not in stop_res.msg'
+    - '"already stopped" not in stop_res.msg'
+    - '"shutting down" not in stop_res.msg'
+  when: state == "stopped"
+
+- name: Delete VM
+  block:
+    - name: Delete VM
+      community.general.proxmox_kvm:
+        node: "{{ proxmox_node }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_host: "{{ proxmox_api_host }}"
+        api_password: "{{ proxmox_api_password }}"
+        name: "{{ vm_name }}"
+        force: true
+        state: absent
+    - name: Delete from inventory
+      ansible.builtin.file:
+        path: "vm_inventory/{{ vm_name }}"
+        state: absent
+  when: state == "absent"

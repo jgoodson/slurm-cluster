@@ -1,9 +1,10 @@
 ---
-- name: Add Slurm DNS Record to IPA DNS Zone
+- name: Configure Slurm DNS Records
   hosts: ipaserver
   become: true
   tasks:
-    - freeipa.ansible_freeipa.ipadnsrecord:
+    - name: Add Slurm DNS Record to IPA DNS Zone
+      freeipa.ansible_freeipa.ipadnsrecord:
         ipaadmin_password: "{{ ipaadmin_password }}"
         name: _slurmctld._tcp
         zone_name: cluster.local
@@ -16,9 +17,7 @@
 - name: Configure Slurm Cluster
   hosts: slurm
   become: true
-  vars_files:
-    - vault.yml
-  roles: 
+  roles:
     - role: scicore.slurm
       state: present
   tags:

@@ -1,15 +1,18 @@
 ---
 # add all the slurm hosts to /etc/hosts in every machine
-# ips come from ansible facts hostvars[ansible_hostname]['ansible_default_ipv4']['address']
+# ips come from ansible facts:
+#  hostvars[ansible_hostname]['ansible_default_ipv4']['address']
 slurm_update_etc_hosts_file: false
 
-# by default the role will deploy a lua submit plugin which will automatically add the users to the slurm accounting db
+# by default the role will deploy a lua submit plugin which will
+#  automatically add the users to the slurm accounting db
 # Check "templates/job_submit.lua.j2" for details
 slurm_config_deploy_lua_submit_plugin: true
 
 # Use slurm configless https://slurm.schedmd.com/configless_slurm.html
 # This feature requires slurm 20.02 or higher
-# Only tested on RedHat systems but it should work on Ubuntu too if you install ubuntu20.02 or higher
+# Only tested on RedHat systems but it should work on Ubuntu too if you
+#  install ubuntu20.02 or higher
 slurm_configless: true
 
 # slurm cluster name as defined in slurm.cfg
@@ -17,7 +20,8 @@ slurm_cluster_name: slurm-cluster
 
 # set this var to the ansible_hostname of the slurm-master
 slurm_master_host: slurm.cluster.local
-# set this var to the ansible_hostname of the slurm-dbd host (same as slurm-master by default)
+# set this var to the ansible_hostname of the slurm-dbd host
+#  (same as slurm-master by default)
 slurm_dbd_host: "{{ slurm_master_host }}"
 
 # group in your ansible inventory including all the slurm workers
@@ -46,11 +50,13 @@ slurm_group:
   RedHat: "root"
   Debian: "slurm"
 
-# EPEL is required to install slurm packages and some dependencies on CentOS/RedHat systems.
+# EPEL is required to install slurm packages and some dependencies
+#  on CentOS/RedHat systems.
 slurm_add_epel_repo: false
 
 # You can set this to true to enable the openhpc yum repos on centos
-# If you plan to use packages from openhpc you should also update the list of packages for RedHat below
+# If you plan to use packages from openhpc you should also update the
+#  list of packages for RedHat below
 slurm_add_openhpc_repo: false
 slurm_ohpc_repos_url:
   rhel7: "https://github.com/openhpc/ohpc/releases/download/v1.3.GA/ohpc-release-1.3-1.el7.x86_64.rpm"
@@ -86,6 +92,6 @@ slurm_packages_slurmdbd:
 slurm_packages_worker:
   RedHat:
     - slurm-slurmd
-    - vte-profile  # avoid error message "bash __vte_prompt_command command not found" on slurm interative shells
+    - vte-profile
   Debian:
     - slurmd

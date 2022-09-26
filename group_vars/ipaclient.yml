@@ -1,8 +1,8 @@
 ---
 ipaserver_domain: cluster.local
 ipaserver_realm: CLUSTER.LOCAL
-ipaclient_all_ip_addresses: yes
-ipasssd_enable_dns_updates: yes
-ipaclient_allow_repair: yes
-ipaclient_mkhomedir: yes
-ipaclient_ssh_trust_dns: yes
+ipaclient_all_ip_addresses: true
+ipasssd_enable_dns_updates: true
+ipaclient_allow_repair: true
+ipaclient_mkhomedir: true
+ipaclient_ssh_trust_dns: true
