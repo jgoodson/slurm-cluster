@@ -7,18 +7,18 @@
       freeipa.ansible_freeipa.ipadnsrecord:
         ipaadmin_password: "{{ ipaadmin_password }}"
         name: _slurmctld._tcp
-        zone_name: cluster.local
+        zone_name: "{{ ipaserver_domain }}"
         record_type: "SRV"
         srv_port: 6817
         srv_weight: 0
         srv_priority: 0
-        srv_target: slurmd.cluster.local
+        srv_target: "{{ hostvars[groups['slurm'][0]]['slurm_master_host'] }}"
 
 - name: Configure Slurm Cluster
   hosts: slurm
   become: true
   roles:
-    - role: scicore.slurm
+    - role: ansible-role-slurm
       state: present
   tags:
     - server

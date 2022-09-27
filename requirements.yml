@@ -1,0 +1,7 @@
+---
+collections:
+  - freeipa.ansible_freeipa
+
+roles:
+  - src: git+https://github.com/jgoodson/ansible-role-slurm
+  - src: geerlingguy.nfs

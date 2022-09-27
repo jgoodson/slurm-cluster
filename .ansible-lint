@@ -13,3 +13,4 @@ mock_modules:
 
 exclude_paths:
  - ./~/.ansible/
+ - ./~/ansible-role-slurm

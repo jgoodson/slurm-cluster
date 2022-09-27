@@ -1,5 +1,5 @@
 ---
-- name: Create VM
+- name: Clone VM
   community.general.proxmox_kvm:
     node: "{{ proxmox_node }}"
     api_user: "{{ proxmox_api_user }}"
@@ -9,7 +9,6 @@
     clone: template
     vmid: "{{ template_id }}"
     storage: "{{ vm_storage_location }}"
-    virtio: "{{ vm_virtio_config }}"
     timeout: 120
   when: state == "present" or state == "started"
   register: vm_info
@@ -17,9 +16,6 @@
 - name: Configure VM
   when: state == "present" or state == "started"
   block:
-    - name: Debug
-      debug:
-        var: vm_info
     - name: Update Network Configuration
       community.general.proxmox_kvm:
         node: "{{ proxmox_node }}"
@@ -49,7 +45,7 @@
   ansible.builtin.template:
     src: inventory
     dest: "vm_inventory/{{ vm_name }}"
-  when: not state == "absent"
+  when: state != "absent"
 
 - name: Stop VM
   community.general.proxmox_kvm:
