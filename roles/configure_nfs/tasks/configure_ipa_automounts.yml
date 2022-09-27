@@ -1,0 +1,32 @@
+---
+- name: Create data mount key
+  freeipa.ansible_freeipa.ipaautomountkey:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    location: default
+    mapname: auto.direct
+    key: /data
+    info: >-
+      -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192
+      nfs1.{{ ipaserver_domain }}:/mnt/storage/data
+    state: present
+- name: Create home mount map
+  freeipa.ansible_freeipa.ipaautomountmap:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    location: default
+    name: auto.homes
+- name: Create home mount key in master
+  freeipa.ansible_freeipa.ipaautomountkey:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    location: default
+    mapname: auto.master
+    key: /home
+    info: auto.homes
+    state: present
+- name: Create homes mount key in homes
+  freeipa.ansible_freeipa.ipaautomountkey:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    location: default
+    mapname: auto.homes
+    key: '*'
+    info: -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.{{ ipaserver_domain }}:/mnt/storage/homes/&
+    state: present

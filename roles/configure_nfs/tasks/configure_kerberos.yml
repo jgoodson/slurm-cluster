@@ -1,0 +1,61 @@
+---
+- name: Create NFS Service for host
+  freeipa.ansible_freeipa.ipaservice:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "nfs/{{ name }}"
+    state: present
+
+- name: Store Kerberos Prinicpal in keytab
+  become: true
+  block:
+    - name: Check for keytab entry
+      command: klist -t -k /etc/krb5.keytab
+      register: keytab
+      changed_when: "principal not in keytab.stdout"
+
+    - name: Log In
+      shell: echo "{{ ipaadmin_password }}" | kinit admin
+      when: "principal not in keytab.stdout"
+
+    - name: Store service keytab
+      command: >
+        ipa-getkeytab -s ipamaster.{{ ipaserver_domain }}
+        -k /etc/krb5.keytab -p nfs/{{ name }}
+      when: "principal not in keytab.stdout"
+
+    - name: Enable rpc-gssd service
+      ansible.builtin.service:
+        name: rpc-gssd
+        enabled: true
+        state: started
+
+- become: true
+  block:
+    - name: Configure SELinux for NFS Home Dir
+      ansible.posix.seboolean:
+        name: use_nfs_home_dirs
+        state: true
+        persistent: true
+
+    - name: Prepare new default user home directory
+      ansible.builtin.file:
+        path: /export/home
+        mode: 0755
+        state: directory
+      register: new_home
+
+    - name: Copy default user home directory
+      ansible.builtin.copy:
+        src: /home/rocky
+        dest: /export/home/
+        remote_src: true
+        mode: preserve
+        owner: rocky
+        group: rocky
+      when: new_home is change
+
+    - name: Reset default user home directory
+      lineinfile:
+        path: /etc/passwd
+        regexp: rocky:x:1000:1000:Cloud User:/home/rocky:/bin/bash
+        line: rocky:x:1000:1000:Cloud User:/export/home/rocky:/bin/bash

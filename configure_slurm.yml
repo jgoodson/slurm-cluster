@@ -14,7 +14,7 @@
         srv_priority: 0
         srv_target: "{{ hostvars[groups['slurm'][0]]['slurm_master_host'] }}"
 
-- name: Configure Slurm Cluster
+- name: Install Slurm Cluster
   hosts: slurm
   become: true
   roles:
@@ -22,3 +22,13 @@
       state: present
   tags:
     - server
+
+- name: Tweak Slurm Config
+  hosts: slurm_master_host, slurm_submit_hosts
+  become: true
+  tasks:
+    - name: Set ReturnToService
+      lineinfile:
+        path: /etc/slurm/slurm.conf
+        regexp: '^ReturnToService=.'
+        line: 'ReturnToService=2'

@@ -1,0 +1,17 @@
+---
+- name: Check if automount configured
+  lineinfile:
+    name: /etc/idmapd.conf
+    regexp: "^DOMAIN.*=.*{{ ipaserver_domain }}"
+    state: absent
+  check_mode: true
+  register: automount_conf
+
+- name: Configure ipa automount
+  ansible.builtin.shell: ipa-client-automount -U; echo
+  when: not automount_conf.changed
+
+- name: Restart autofs
+  ansible.builtin.service:
+    name: autofs
+    state: restarted

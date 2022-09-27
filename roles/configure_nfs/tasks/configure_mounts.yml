@@ -1,0 +1,17 @@
+---
+- become: true
+  block:
+  - name: Mount /home
+    ansible.posix.mount:
+      path: /home
+      src: nfs1.{{ ipaserver_domain }}:/mnt/storage/homes
+      fstype: nfs4
+      opts: vers=4.2,sec=krb5,soft,rsize=8192,wsize=8192
+      state: mounted
+  - name: Mount /data
+    ansible.posix.mount:
+      path: /data
+      src: nfs1.{{ ipaserver_domain }}:/mnt/storage/data
+      fstype: nfs4
+      opts: vers=4.2,sec=krb5,soft,rsize=8192,wsize=8192
+      state: mounted

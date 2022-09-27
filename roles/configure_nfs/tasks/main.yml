@@ -1,0 +1,29 @@
+---
+- name: Configure NFS Server
+  when: inventory_hostname in groups['nfs']
+  ansible.builtin.include_tasks: configure_server.yml
+
+- name: Configure NFS-Kerberos
+  when: (inventory_hostname in groups['nfsclient']) or
+        (inventory_hostname in groups['nfs'])
+  vars:
+    principal: "nfs/{{ name }}"
+  ansible.builtin.include_tasks: configure_kerberos.yml
+
+- name: Configure automounts
+  when:
+    - inventory_hostname in groups['ipaserver']
+    - nfs_automount
+  ansible.builtin.include_tasks: configure_ipa_automounts.yml
+
+- name: Enable NFS Client Automounts
+  when:
+    - inventory_hostname in groups['nfsclient']
+    - nfs_automount
+  ansible.builtin.include_tasks: configure_automounts.yml
+
+- name: Configure NFS Client for static mount
+  when:
+    - inventory_hostname in groups['nfsclient']
+    - not nfs_automount
+  ansible.builtin.include_tasks: configure_mounts.yml

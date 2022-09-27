@@ -56,3 +56,6 @@
 - Figure out why sometimes the DNS records don't get created for hosts (not consistent which ones)
     - Incomplete client addition process?
     - Running the `install_freeipa.yml` playbook  again seems to fix this.
+
+### Notes
+- Configless Slurm doesn't seem to bring nodes back up when they reboot?

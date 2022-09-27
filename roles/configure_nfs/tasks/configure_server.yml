@@ -1,0 +1,63 @@
+---
+- become: true
+  block:
+    - name: Partition storage drive
+      community.general.parted:
+        device: /dev/vda
+        number: 1
+        flags: [lvm]
+        state: present
+
+    - name: Create storage filesystem
+      community.general.filesystem:
+        fstype: "{{ nfs_filesystem_type }}"
+        dev: /dev/vda1
+        state: present
+
+    - name: Ensure mount point is present
+      ansible.builtin.file:
+        path: /mnt/storage
+        mode: 0755
+        state: directory
+
+    - name: Mount storage filesystem
+      ansible.posix.mount:
+        fstype: "{{ nfs_filesystem_type }}"
+        src: /dev/vda1
+        path: /mnt/storage
+        state: mounted
+
+    - name: Ensure NFS mount points are present
+      ansible.builtin.file:
+        path: "/mnt/storage/{{ item }}"
+        mode: 0755
+        state: directory
+      loop:
+        - "homes"
+        - "data"
+
+    - name: Create user home directories
+      ansible.builtin.copy:
+        src: /etc/skel/
+        dest: "/mnt/storage/homes/{{ item }}/"
+        force: false
+        owner: "{{ item }}"
+        group: "{{ item }}"
+      loop: '{{ users | map(attribute="name") }}'
+
+    - name: Create user data directories
+      ansible.builtin.file:
+        path: "/mnt/storage/data/{{ item }}"
+        mode: 0700
+        state: directory
+        owner: "{{ item }}"
+        group: "{{ item }}"
+      loop: '{{ users | map(attribute="name") }}'
+
+    - name: Install and start NFS
+      include_role:
+        name: geerlingguy.nfs
+      vars:
+        nfs_exports:
+          - "/mnt/storage/homes *(rw,sync,no_root_squash,sec=sys:krb5)"
+          - "/mnt/storage/data *(rw,sync,no_root_squash,sec=sys:krb5)"
