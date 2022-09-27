@@ -21,7 +21,7 @@
       state: directory
   - name: Mount storage filesystem
     ansible.posix.mount:
-      fstype: ext4
+      fstype: "{{ nfs_filesystem_type }}"
       src: /dev/vda1
       path: /mnt/storage
       state: mounted
