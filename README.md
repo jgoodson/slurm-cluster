@@ -24,6 +24,8 @@
 - Install FreeIPA identity management
     - `ansible-playbook -v install_freeipa.yml`
         - Installs FreeIPA server on the server/replica nodes and configures clients
+    - You may have to run that (optional: with the tag `-t client`) to ensure all clients
+        are actually properly added. Unclear why some sometimes get missed
     - `ansible-playbook -v configure_freeipa.yml`
         - Creates users and sudo rules
 - Configure Slurm with scicore playbook

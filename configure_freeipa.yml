@@ -24,3 +24,14 @@
         ipaadmin_password: "{{ ipaadmin_password }}"
         name: admins
         user: "{{ admins + ['admin'] }}"
+
+- name: Configure Slurm Controller
+  hosts: slurm_master_host
+  become: true
+  tasks:
+    - name: Enable sssd enumeration
+      lineinfile:
+        path: /etc/sssd/sssd.conf
+        line: enumerate = true
+        insertafter: "[domain/{{ ipaserver_domain }}]"
+        firstmatch: true

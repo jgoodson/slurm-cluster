@@ -40,7 +40,7 @@ replica_config:
 slurm_controller_config:
   vm_cores: 4
   vm_memory: 4096
-  inventory_types: ["ipaclient", "slurm", "nfsclient"]
+  inventory_types: ["ipaclient", "slurm_master_host", "slurm", "nfsclient"]
 login_config:
   vm_cores: 4
   vm_memory: 4096
