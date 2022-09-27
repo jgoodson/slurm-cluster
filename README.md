@@ -46,8 +46,9 @@
 - CLOOOOUUUUUUUD
     - Setup a cluster with ParallelCluster, Bath, or some other tool and integrate it with this one
 - Automate more things - low priority
-    - Promox setup?
-    - Router/utility box provisioning?
+    - Promox setup
+    - Router/utility box provisioning
+    - Automate creation of Rocky 8 VM template
     - Figure out how to automate creation of a second VHD (proxmox_kvm will not do it)
 - Clean up template and make cloud-init work properly
     - Right now all my hosts have the same SSH host keys because my change to cloud-init config didn't do what I thought it would
