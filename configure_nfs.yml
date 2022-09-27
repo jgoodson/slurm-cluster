@@ -164,14 +164,6 @@
             key: /home
             info: auto.homes
             state: present
-        - name: Create default user mount key in homes
-          freeipa.ansible_freeipa.ipaautomountkey:
-            ipaadmin_password: "{{ ipaadmin_password }}"
-            location: default
-            mapname: auto.homes
-            key: rocky
-            info: /-
-            state: present
         - name: Create homes mount key in homes
           freeipa.ansible_freeipa.ipaautomountkey:
             ipaadmin_password: "{{ ipaadmin_password }}"
