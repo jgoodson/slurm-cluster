@@ -24,9 +24,12 @@
 - Install FreeIPA identity management
     - `ansible-playbook -v install_freeipa.yml`
         - Installs FreeIPA server on the server/replica nodes and configures clients
+    - `ansible-playbook -v configure_freeipa.yml`
+        - Creates users and sudo rules
 - Configure Slurm with scicore playbook
     - `ansible-playbook -v configure_slurm.yml`
         - Sets up a DNS SRV record and builds a slurm cluster with "configless" clients
+        - Must be run before NFS setup to ensure users exist
 - Set up NFS network automounts
     - Add a VirtualIO drive to the nfs1 VM for storage
         - Cannot be automated with existing proxmox roles. Would need to add my own.
