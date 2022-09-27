@@ -33,6 +33,12 @@
     loop:
       - "homes"
       - "data"
+  - name: Copy default user home directory
+    ansible.builtin.copy:
+      src: /home/rocky
+      dest: /mnt/storage/homes/
+      remote_src: true
+      mode: preserve
   roles:
     - role: geerlingguy.nfs
       state: present
@@ -43,6 +49,18 @@
   tags:
     - server
     - nfs
+
+- name: Create NFS Kerberos Prinicpals
+  hosts: ipaserver
+  tasks:
+    # Ensure service is present
+    - name: Create NFS Service for host
+      freeipa.ansible_freeipa.ipaservice:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: "nfs/{{ item }}"
+        state: present
+      with_items:
+        - "{{ groups['nfsclient'] }}"
 
 - name: Configure NFS-Kerberos
   hosts: nfsclient
@@ -62,14 +80,16 @@
         - name: Check for keytab entry
           command: klist -t -k /etc/krb5.keytab
           register: keytab
-          changed_when: "name not in keytab"
+          changed_when: 'name not in keytab'
         - name: Store Kerberos Prinicpal in keytab
           block:
             - name: Log In
               shell: echo "{{ ipaadmin_password }}" | kinit admin
               when: "name not in keytab"
             - name: Store service keytab
-              command: ipa-getkeytab -s ipamaster.cluster.local -k /etc/krb5.keytab -p nfs/{{ name }}
+              command: >
+                ipa-getkeytab -s ipamaster.cluster.local
+                -k /etc/krb5.keytab -p nfs/{{ name }}
               when: "name not in keytab"
             - name: Enable rpc-gssd service
               ansible.builtin.service:
@@ -118,7 +138,9 @@
             location: default
             mapname: auto.direct
             key: /data
-            info: -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.cluster.local:/mnt/storage/data
+            info: >
+              -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192
+              nfs1.cluster.local:/mnt/storage/data
             state: present
         - name: Create home mount map
           freeipa.ansible_freeipa.ipaautomountmap:
@@ -147,7 +169,9 @@
             location: default
             mapname: auto.homes
             key: '*'
-            info: -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.cluster.local:/mnt/storage/homes/&
+            info: >
+              -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192
+              nfs1.cluster.local:/mnt/storage/homes/&
             state: present
 
 - name: Enable NFS Client Automounts

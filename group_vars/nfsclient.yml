@@ -1,2 +1,2 @@
 ---
-nfs_automount: false
+nfs_automount: true

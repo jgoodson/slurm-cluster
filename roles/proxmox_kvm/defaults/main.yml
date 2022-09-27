@@ -13,5 +13,4 @@ vm_cores: 1
 vm_memory: 2048
 vm_ip_address: "dhcp"
 vm_gateway: "dhcp"
-vm_scsi: {}
 inventory_types: ["vm"]

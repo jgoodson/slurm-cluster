@@ -5,4 +5,3 @@ ipareplica_no_host_dns: true
 ipareplica_setup_dns: true
 ipareplica_auto_forwarders: true
 ipaclient_force_join: true
-nfs_automount: false

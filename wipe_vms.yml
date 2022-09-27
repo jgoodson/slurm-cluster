@@ -17,6 +17,7 @@
         - client1.cluster.local
         - client2.cluster.local
         - client3.cluster.local
+        - slurm.cluster.local
     - name: Delete VMs
       include_role:
         name: proxmox_kvm
@@ -32,3 +33,4 @@
         - client1.cluster.local
         - client2.cluster.local
         - client3.cluster.local
+        - slurm.cluster.local

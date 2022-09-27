@@ -8,27 +8,32 @@
     name: "{{ vm_name }}"
     clone: template
     vmid: "{{ template_id }}"
-    newid: "{{ new_vm_id }}"
     storage: "{{ vm_storage_location }}"
-    scsi: "{{ vm_scsi }}"
+    virtio: "{{ vm_virtio_config }}"
     timeout: 120
   when: state == "present" or state == "started"
+  register: vm_info
 
 - name: Configure VM
-  community.general.proxmox_kvm:
-    node: "{{ proxmox_node }}"
-    api_user: "{{ proxmox_api_user }}"
-    api_host: "{{ proxmox_api_host }}"
-    api_password: "{{ proxmox_api_password }}"
-    name: "{{ vm_name }}"
-    cores: "{{ vm_cores }}"
-    memory: "{{ vm_memory }}"
-    nameservers: "{{ vm_name_servers }}"
-    searchdomains: "{{ vm_search_domains }}"
-    ipconfig:
-      ipconfig0: "ip={{ vm_ip_address }},gw={{ vm_gateway }}"
-    update: true
   when: state == "present" or state == "started"
+  block:
+    - name: Debug
+      debug:
+        var: vm_info
+    - name: Update Network Configuration
+      community.general.proxmox_kvm:
+        node: "{{ proxmox_node }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_host: "{{ proxmox_api_host }}"
+        api_password: "{{ proxmox_api_password }}"
+        name: "{{ vm_name }}"
+        cores: "{{ vm_cores }}"
+        memory: "{{ vm_memory }}"
+        nameservers: "{{ vm_name_servers }}"
+        searchdomains: "{{ vm_search_domains }}"
+        ipconfig:
+          ipconfig0: "ip={{ vm_ip_address }},gw={{ vm_gateway }}"
+        update: true
 
 - name: Start VM
   community.general.proxmox_kvm:
@@ -55,13 +60,14 @@
     name: "{{ vm_name }}"
     state: stopped
   register: stop_res
-  failed_when: 
+  failed_when:
     - '"not exist" not in stop_res.msg'
     - '"already stopped" not in stop_res.msg'
     - '"shutting down" not in stop_res.msg'
   when: state == "stopped"
 
 - name: Delete VM
+  when: state == "absent"
   block:
     - name: Delete VM
       community.general.proxmox_kvm:
@@ -76,4 +82,3 @@
       ansible.builtin.file:
         path: "vm_inventory/{{ vm_name }}"
         state: absent
-  when: state == "absent"

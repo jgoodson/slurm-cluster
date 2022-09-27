@@ -1,0 +1,27 @@
+---
+- name: Configure FreeIPA
+  hosts: ipaserver
+  become: true
+  tasks:
+    - name: Add sudo rule for admins
+      freeipa.ansible_freeipa.ipasudorule:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: admin_sudo
+        group:
+          - admins
+        hostcategory: all
+        cmdcategory: all
+    - name: Add user
+      freeipa.ansible_freeipa.ipauser:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: jonathan
+        first: Jonathan
+        last: Goodson
+        password: "{{ ipaadmin_password }}"
+    - name: Add user to admins
+      freeipa.ansible_freeipa.ipagroup:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: admins
+        user:
+          - jonathan
+          - admin

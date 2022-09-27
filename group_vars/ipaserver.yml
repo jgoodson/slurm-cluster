@@ -4,4 +4,3 @@ ipaserver_realm: CLUSTER.LOCAL
 ipaserver_setup_dns: true
 ipaserver_auto_forwarders: true
 ipaserver_no_host_dns: true
-nfs_automount: false

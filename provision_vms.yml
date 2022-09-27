@@ -1,0 +1,94 @@
+---
+- name: Provision FreeIPA Servers
+  hosts: localhost
+  tasks:
+    # Master FreeIPA VM
+    - name: Create Master VM
+      include_role:
+        name: proxmox_kvm
+      vars:
+        proxmox_api_password: "{{ api_password }}"
+        vm_name: "{{ item.vm_name }}"
+        template_id: "{{ vm_config.template_id }}"
+        vm_cores: "{{ master_config.vm_cores | int }}"
+        vm_memory: "{{ master_config.vm_memory | int }}"
+        vm_ip_address: "{{ item.vm_ip_address }}"
+        vm_gateway: "{{ vm_config.vm_gateway }}"
+        inventory_types: "{{ master_config.inventory_types }}"
+        state: started
+      loop: "{{ vms.masters }}"
+    # Replica FreeIPA VM
+    - name: Create Replica VM
+      include_role:
+        name: proxmox_kvm
+      vars:
+        proxmox_api_password: "{{ api_password }}"
+        vm_name: "{{ item.vm_name }}"
+        template_id: "{{ vm_config.template_id }}"
+        vm_cores: "{{ replica_config.vm_cores | int }}"
+        vm_memory: "{{ replica_config.vm_memory | int }}"
+        vm_ip_address: "{{ item.vm_ip_address }}"
+        vm_gateway: "{{ vm_config.vm_gateway }}"
+        inventory_types: "{{ replica_config.inventory_types }}"
+        state: started
+      loop: "{{ vms.replicas }}"
+    # Slurm Controller VM
+    - name: Create Slurm Controller VM
+      include_role:
+        name: proxmox_kvm
+      vars:
+        proxmox_api_password: "{{ api_password }}"
+        vm_name: "{{ item.vm_name }}"
+        template_id: "{{ vm_config.template_id }}"
+        vm_cores: "{{ slurm_controller_config.vm_cores | int }}"
+        vm_memory: "{{ slurm_controller_config.vm_memory | int }}"
+        vm_ip_address: "{{ item.vm_ip_address }}"
+        vm_gateway: "{{ vm_config.vm_gateway }}"
+        inventory_types: "{{ slurm_controller_config.inventory_types }}"
+        state: started
+      loop: "{{ vms.slurm_controllers }}"
+    # Slurm Login VM
+    - name: Create Slurm Login VM
+      include_role:
+        name: proxmox_kvm
+      vars:
+        proxmox_api_password: "{{ api_password }}"
+        vm_name: "{{ item.vm_name }}"
+        template_id: "{{ vm_config.template_id }}"
+        vm_cores: "{{ login_config.vm_cores | int }}"
+        vm_memory: "{{ login_config.vm_memory | int }}"
+        vm_ip_address: "{{ item.vm_ip_address }}"
+        vm_gateway: "{{ vm_config.vm_gateway }}"
+        inventory_types: "{{ login_config.inventory_types }}"
+        state: started
+      loop: "{{ vms.login_nodes }}"
+    # NFS Share VM
+    - name: Create NFS VM
+      include_role:
+        name: proxmox_kvm
+      vars:
+        proxmox_api_password: "{{ api_password }}"
+        vm_name: "{{ item.vm_name }}"
+        template_id: "{{ vm_config.template_id }}"
+        vm_cores: "{{ nfs_config.vm_cores | int }}"
+        vm_memory: "{{ nfs_config.vm_memory | int }}"
+        vm_ip_address: "{{ item.vm_ip_address }}"
+        vm_gateway: "{{ vm_config.vm_gateway }}"
+        inventory_types: "{{ nfs_config.inventory_types }}"
+        state: started
+      loop: "{{ vms.nfs_hosts }}"
+    # Client VMs
+    - name: Create Client VM
+      include_role:
+        name: proxmox_kvm
+      vars:
+        proxmox_api_password: "{{ api_password }}"
+        vm_name: "{{ item.vm_name }}"
+        template_id: "{{ vm_config.template_id }}"
+        vm_cores: "{{ worker_config.vm_cores | int }}"
+        vm_memory: "{{ worker_config.vm_memory | int }}"
+        vm_ip_address: "{{ item.vm_ip_address }}"
+        vm_gateway: "{{ vm_config.vm_gateway }}"
+        inventory_types: "{{ worker_config.inventory_types }}"
+        state: started
+      loop: "{{ vms.workers }}"

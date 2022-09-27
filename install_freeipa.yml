@@ -3,6 +3,10 @@
   hosts: [ipaserver, ipareplica, ipaclient]
   become: true
   tasks:
+    - name: Wait for all hosts to be up
+      ansible.builtin.wait_for_connection:
+        delay: 10
+        timeout: 300
     - name: Remove local hostname local IP mapping
       lineinfile:
         path: /etc/hosts
