@@ -50,3 +50,12 @@ worker_config:
   vm_cores: 4
   vm_memory: 4096
   inventory_types: ["ipaclient", "slurm_workers", "slurm", "nfsclient"]
+
+users:
+  - name: jonathan
+    first: Jonathan
+    last: Goodson
+    password: "{{ ipaadmin_password }}"
+
+admins:
+  - jonathan

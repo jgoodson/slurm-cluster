@@ -11,7 +11,7 @@
       state: present
   - name: Create storage filesystem
     community.general.filesystem:
-      fstype: ext4
+      fstype: "{{ nfs_filesystem_type }}"
       dev: /dev/vda1
       state: present
   - name: Ensure mount point is present
@@ -39,6 +39,22 @@
       dest: /mnt/storage/homes/
       remote_src: true
       mode: preserve
+  - name: Create user home directories
+    ansible.builtin.file:
+      path: "/mnt/storage/homes/{{ item }}"
+      mode: 0700
+      state: directory
+      owner: "{{ item }}"
+      group: "{{ item }}"
+    loop: '{{ users | map(attribute="name") }}'
+  - name: Create user data directories
+    ansible.builtin.file:
+      path: "/mnt/storage/data/{{ item }}"
+      mode: 0700
+      state: directory
+      owner: "{{ item }}"
+      group: "{{ item }}"
+    loop: '{{ users | map(attribute="name") }}'
   roles:
     - role: geerlingguy.nfs
       state: present
@@ -50,25 +66,16 @@
     - server
     - nfs
 
-- name: Create NFS Kerberos Prinicpals
-  hosts: ipaserver
-  tasks:
-    # Ensure service is present
-    - name: Create NFS Service for host
-      freeipa.ansible_freeipa.ipaservice:
-        ipaadmin_password: "{{ ipaadmin_password }}"
-        name: "nfs/{{ item }}"
-        state: present
-      with_items:
-        - "{{ groups['nfsclient'] }}"
-
 - name: Configure NFS-Kerberos
-  hosts: nfsclient
+  hosts: nfsclient, nfs
+  vars:
+    principal: "nfs/{{ name }}"
   tasks:
     - name: Configure NFS Service Principals
       become: true
       tags:
         - nfs
+        - server
         - client
       block:
         # Ensure service is present
@@ -80,17 +87,17 @@
         - name: Check for keytab entry
           command: klist -t -k /etc/krb5.keytab
           register: keytab
-          changed_when: 'name not in keytab'
+          changed_when: "principal not in keytab.stdout"
         - name: Store Kerberos Prinicpal in keytab
           block:
             - name: Log In
               shell: echo "{{ ipaadmin_password }}" | kinit admin
-              when: "name not in keytab"
+              when: "principal not in keytab.stdout"
             - name: Store service keytab
               command: >
                 ipa-getkeytab -s ipamaster.cluster.local
                 -k /etc/krb5.keytab -p nfs/{{ name }}
-              when: "name not in keytab"
+              when: "principal not in keytab.stdout"
             - name: Enable rpc-gssd service
               ansible.builtin.service:
                 name: rpc-gssd
@@ -113,6 +120,8 @@
             dest: /export/home/
             remote_src: true
             mode: preserve
+            owner: rocky
+            group: rocky
           when: new_home is changed
         - name: Reset default user home directory
           lineinfile:
@@ -138,7 +147,7 @@
             location: default
             mapname: auto.direct
             key: /data
-            info: >
+            info: >-
               -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192
               nfs1.cluster.local:/mnt/storage/data
             state: present
@@ -169,9 +178,7 @@
             location: default
             mapname: auto.homes
             key: '*'
-            info: >
-              -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192
-              nfs1.cluster.local:/mnt/storage/homes/&
+            info: -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.cluster.local:/mnt/storage/homes/&
             state: present
 
 - name: Enable NFS Client Automounts

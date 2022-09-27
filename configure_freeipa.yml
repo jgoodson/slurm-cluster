@@ -11,17 +11,16 @@
           - admins
         hostcategory: all
         cmdcategory: all
-    - name: Add user
+    - name: Add users
       freeipa.ansible_freeipa.ipauser:
         ipaadmin_password: "{{ ipaadmin_password }}"
-        name: jonathan
-        first: Jonathan
-        last: Goodson
-        password: "{{ ipaadmin_password }}"
-    - name: Add user to admins
+        name: "{{ item.name }}"
+        first: "{{ item.first }}"
+        last: "{{ item.last }}"
+        password: "{{ item.password }}"
+      loop: "{{ users }}"
+    - name: Add users to admins
       freeipa.ansible_freeipa.ipagroup:
         ipaadmin_password: "{{ ipaadmin_password }}"
         name: admins
-        user:
-          - jonathan
-          - admin
+        user: "{{ admins + ['admin'] }}"

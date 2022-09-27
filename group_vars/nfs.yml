@@ -1,3 +1,4 @@
 ---
 nfs_exports: ["/mnt/storage"]
 nfs_automount: false
+nfs_filesystem_type: xfs
