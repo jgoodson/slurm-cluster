@@ -19,7 +19,7 @@ slurm_configless: true
 slurm_cluster_name: slurm-cluster
 
 # set this var to the ansible_hostname of the slurm-master
-slurm_master_host: "slurm.{{ cluster.local }}"
+slurm_master_host: "slurm.{{ ipaserver_domain }}"
 
 # set this var to the ansible_hostname of the slurm-dbd host
 #  (same as slurm-master by default)
