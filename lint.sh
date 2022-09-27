@@ -1,2 +1,3 @@
 #!/bin/sh
-ansible-lint -p playbooks/*
+ansible-lint -p *.yml
+yamllint .

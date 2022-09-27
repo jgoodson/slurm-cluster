@@ -4,6 +4,9 @@ skip_list:
  - role-name
  - fqcn-builtins
 
+warn_list:
+ - yaml[line-length]
+
 mock_modules:
  - docker_container
  - docker_container_info
