@@ -1,26 +1,29 @@
 ---
+ipaserver_domain: cluster.local
+ipaserver_realm: CLUSTER.LOCAL
+
 vms:
   masters:
-    - vm_name: "ipamaster.cluster.local"
+    - vm_name: "ipamaster.{{ ipaserver_domain }}"
       vm_ip_address: "10.0.1.1/16"
   replicas:
-    - vm_name: "ipareplica.cluster.local"
+    - vm_name: "ipareplica.{{ ipaserver_domain }}"
       vm_ip_address: "10.0.1.2/16"
   slurm_controllers:
-    - vm_name: "slurm.cluster.local"
+    - vm_name: "slurm.{{ ipaserver_domain }}"
       vm_ip_address: "10.0.2.1/16"
   login_nodes:
-    - vm_name: "login.cluster.local"
+    - vm_name: "login.{{ ipaserver_domain }}"
       vm_ip_address: "10.0.2.2/16"
   nfs_hosts:
-    - vm_name: "nfs1.cluster.local"
+    - vm_name: "nfs1.{{ ipaserver_domain }}"
       vm_ip_address: "10.0.3.1/16"
   workers:
-    - vm_name: "client1.cluster.local"
+    - vm_name: "client1.{{ ipaserver_domain }}"
       vm_ip_address: "10.0.200.1/16"
-    - vm_name: "client2.cluster.local"
+    - vm_name: "client2.{{ ipaserver_domain }}"
       vm_ip_address: "10.0.200.2/16"
-    - vm_name: "client3.cluster.local"
+    - vm_name: "client3.{{ ipaserver_domain }}"
       vm_ip_address: "10.0.200.3/16"
 
 vm_config:

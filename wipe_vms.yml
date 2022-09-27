@@ -8,29 +8,33 @@
       vars:
         proxmox_api_password: "{{ api_password }}"
         vm_name: "{{ item }}"
+        force: true
         state: stopped
       loop:
-        - ipamaster.cluster.local
-        - ipareplica.cluster.local
-        - login.cluster.local
-        - nfs1.cluster.local
-        - client1.cluster.local
-        - client2.cluster.local
-        - client3.cluster.local
-        - slurm.cluster.local
+        - "ipamaster.{{ ipaserver_domain }}"
+        - "ipareplica.{{ ipaserver_domain }}"
+        - "login.{{ ipaserver_domain }}"
+        - "nfs1.{{ ipaserver_domain }}"
+        - "client1.{{ ipaserver_domain }}"
+        - "client2.{{ ipaserver_domain }}"
+        - "client3.{{ ipaserver_domain }}"
+        - "slurm.{{ ipaserver_domain }}"
+      ignore_errors: true
     - name: Delete VMs
       include_role:
         name: proxmox_kvm
       vars:
         proxmox_api_password: "{{ api_password }}"
         vm_name: "{{ item }}"
+        force: true
         state: absent
       loop:
-        - ipamaster.cluster.local
-        - ipareplica.cluster.local
-        - login.cluster.local
-        - nfs1.cluster.local
-        - client1.cluster.local
-        - client2.cluster.local
-        - client3.cluster.local
-        - slurm.cluster.local
+        - "ipamaster.{{ ipaserver_domain }}"
+        - "ipareplica.{{ ipaserver_domain }}"
+        - "login.{{ ipaserver_domain }}"
+        - "nfs1.{{ ipaserver_domain }}"
+        - "client1.{{ ipaserver_domain }}"
+        - "client2.{{ ipaserver_domain }}"
+        - "client3.{{ ipaserver_domain }}"
+        - "slurm.{{ ipaserver_domain }}"
+      ignore_errors: true

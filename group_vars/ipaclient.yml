@@ -1,6 +1,4 @@
 ---
-ipaserver_domain: cluster.local
-ipaserver_realm: CLUSTER.LOCAL
 ipaclient_all_ip_addresses: true
 ipasssd_enable_dns_updates: true
 ipaclient_allow_repair: true

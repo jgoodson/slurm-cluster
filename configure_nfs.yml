@@ -95,7 +95,7 @@
               when: "principal not in keytab.stdout"
             - name: Store service keytab
               command: >
-                ipa-getkeytab -s ipamaster.cluster.local
+                ipa-getkeytab -s ipamaster.{{ ipaserver_domain }}
                 -k /etc/krb5.keytab -p nfs/{{ name }}
               when: "principal not in keytab.stdout"
             - name: Enable rpc-gssd service
@@ -149,7 +149,7 @@
             key: /data
             info: >-
               -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192
-              nfs1.cluster.local:/mnt/storage/data
+              nfs1.{{ ipaserver_domain }}:/mnt/storage/data
             state: present
         - name: Create home mount map
           freeipa.ansible_freeipa.ipaautomountmap:
@@ -178,7 +178,7 @@
             location: default
             mapname: auto.homes
             key: '*'
-            info: -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.cluster.local:/mnt/storage/homes/&
+            info: -fstype=nfs4,sec=krb5,soft,rsize=8192,wsize=8192 nfs1.{{ ipaserver_domain }}:/mnt/storage/homes/&
             state: present
 
 - name: Enable NFS Client Automounts
@@ -223,14 +223,14 @@
         - name: Mount /home
           ansible.posix.mount:
             path: /home
-            src: nfs1.cluster.local:/mnt/storage/homes
+            src: nfs1.{{ ipaserver_domain }}:/mnt/storage/homes
             fstype: nfs4
             opts: vers=4.2,sec=krb5,soft,rsize=8192,wsize=8192
             state: mounted
         - name: Mount /data
           ansible.posix.mount:
             path: /data
-            src: nfs1.cluster.local:/mnt/storage/data
+            src: nfs1.{{ ipaserver_domain }}:/mnt/storage/data
             fstype: nfs4
             opts: vers=4.2,sec=krb5,soft,rsize=8192,wsize=8192
             state: mounted
