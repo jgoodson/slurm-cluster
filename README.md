@@ -29,12 +29,14 @@ using a fork of the scicore Slurm role with "configless" worker nodes.
 - Create a Proxmox hypervisor with some utility VMs
     - Add an "ansible" user for API use
     - Create a virtual router for your VM subnet, I used VyOS
-    - Configure DNS forwarding to IPA master (10.0.1.1) for `cluster.local`
-    - Create a utility VM on the VM subnet with ansible and proxmoxer
+    - Configure DNS forwarding to IPA master (10.0.1.1) for your cluster domain (`cluster.local`)
+    - Create a utility VM on the VM subnet with ansible and proxmoxer to run these playbooks
 - Configure a template
     - I used the Rocky 8 qcow2 image with cloud-init
     - I did some minor tweaks to the `/etc/yum.conf` and cloud-init settings
-    - I created an LXC container with apt-cacher-ng to keep the repeated yum updates local
+        - I need to document this
+    - I created a container with apt-cacher-ng to keep the repeated yum updates local
+        - Set the proxy in `/etc/yum.conf` in the template to point to that
 - Install Ansible roles/collections
     - `ansible-galaxy install -r requirements.yml`
 - Put the necessary secrets in `vm_inventory/group_vars/all`
@@ -50,21 +52,20 @@ using a fork of the scicore Slurm role with "configless" worker nodes.
 - Install FreeIPA identity management
     - `ansible-playbook -v install_freeipa.yml`
         - Installs FreeIPA server on the server/replica nodes and configures clients
-    - You may have to run that (optional: with the tag `-t client`) to ensure all clients
+    - You may have to run that again (optional: with the tag `-t client`) to ensure all clients
         are actually properly added. Unclear why some sometimes get missed
     - `ansible-playbook -v configure_freeipa.yml`
         - Creates users and sudo rules
-- Configure Slurm with scicore playbook
+- Configure Slurm with scicore fork playbook
     - `ansible-playbook -v configure_slurm.yml`
-        - Sets up a DNS SRV record and builds a slurm cluster with "configless" clients
-        - Must be run before NFS setup to ensure users exist
+        - Sets up a DNS SRV record and builds a Slurm cluster with "configless" clients
 - Set up NFS network automounts
     - Add a VirtualIO drive to the nfs1 VM for storage
-        - Cannot be automated with existing proxmox roles. Would need to add my own.
+        - Cannot be automated with existing proxmox roles. Would need to write my own with the API.
     - `ansible-playbook -v configure_nfs.yml`
         - Sets up storage and installs NFS server
         - Configures NFS with Kerberos authentication on both server and clients
-        - Sets up FreeIPA SSSD distribution of automounts for /mnt/data and /home
+        - Optional: sets up FreeIPA SSSD distribution of automounts for /mnt/data and /home
 
 
 ### Todo
@@ -85,6 +86,5 @@ using a fork of the scicore Slurm role with "configless" worker nodes.
 - Figure out why sometimes the DNS records don't get created for hosts (not consistent which ones)
     - Incomplete client addition process?
     - Running the `install_freeipa.yml` playbook  again seems to fix this.
-
-### Notes
--
+- Get slurm to refer to nodes by their short hostname instead of FQDN
+    - May require changing how Proxmox/FreeIPA handle the DNS and VM names
