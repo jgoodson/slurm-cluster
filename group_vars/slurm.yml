@@ -7,6 +7,9 @@ slurm_update_etc_hosts_file: false
 # point this var to a git repo if you have your slurm config in git
 # slurm_config_git_repo: ""
 
+# Custom template for slurm configuration
+slurm_conf_custom_template: "templates/slurm.conf.j2"
+
 # by default the role will deploy a lua submit plugin which will
 #  automatically add the users to the slurm accounting db
 # Check "templates/job_submit.lua.j2" for details

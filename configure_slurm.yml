@@ -22,13 +22,3 @@
       state: present
   tags:
     - server
-
-- name: Tweak Slurm Config
-  hosts: slurm_master_host, slurm_submit_hosts
-  become: true
-  tasks:
-    - name: Set ReturnToService
-      lineinfile:
-        path: /etc/slurm/slurm.conf
-        regexp: '^ReturnToService=.'
-        line: 'ReturnToService=2'
