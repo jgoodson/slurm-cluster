@@ -1,3 +1,29 @@
+# Ansible playbooks for settings up a Toy HPC Cluster
+
+## Toy Cluster Generation
+
+This includes scripts necessary to build a virtual cluster in an existing Proxmox hypervisor.
+The goal is to generate a nice "local" cluster to test integration with cloud clusters. This
+currently requires manually configuring a Proxmox hypervisor and virtual router (I used VyOS).
+
+![Proxmox VMs](misc/proxmox_cluster.png "Image of Proxmox VMs set up as a cluster")
+
+The cluster is configured with FreeIPA as an identity management service with integrated dns,
+with a master and replica node. The cluster also includes an NFS server which is mounted on
+each appropriate cluster node and authenticated with Kerberos. This also sets up a Slurm cluster
+using a fork of the scicore Slurm role with "configless" worker nodes. 
+
+    [jonathan@login ~]$ srun -N3 bash -c 'hostname && ls -l ~'
+    client3.cluster.local
+    total 0
+    -rw-rw-r--. 1 jonathan jonathan 0 Sep 27 21:58 this_is_network_home
+    client1.cluster.local
+    total 0
+    -rw-rw-r--. 1 jonathan jonathan 0 Sep 27 21:58 this_is_network_home
+    client2.cluster.local
+    total 0
+    -rw-rw-r--. 1 jonathan jonathan 0 Sep 27 21:58 this_is_network_home
+
 ### Steps
 
 - Create a Proxmox hypervisor with some utility VMs
@@ -45,6 +71,9 @@
 
 - CLOOOOUUUUUUUD
     - Setup a cluster with ParallelCluster, Batch, or some other tool and integrate it with this one
+- Other storage types
+    - Provision a Ceph or Lustre storage cluster for "realism"
+        - Expect truly awful performance unless I use my NAS or cloud
 - Automate more things - low priority
     - Promox setup
     - Router/utility box provisioning
