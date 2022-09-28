@@ -29,7 +29,8 @@
         enabled: true
         state: started
 
-- become: true
+- name: Prepare shared/unshared directories
+  become: true
   block:
     - name: Configure SELinux for NFS Home Dir
       ansible.posix.seboolean:

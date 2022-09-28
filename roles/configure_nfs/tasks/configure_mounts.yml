@@ -1,5 +1,6 @@
 ---
-- become: true
+- name: Mount shared directories
+  become: true
   block:
   - name: Mount /home
     ansible.posix.mount:

@@ -1,5 +1,6 @@
 ---
-- become: true
+- name: Configure NFS Server storage
+  become: true
   block:
     - name: Partition storage drive
       community.general.parted:
