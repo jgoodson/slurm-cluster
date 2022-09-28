@@ -44,7 +44,7 @@
 - name: Write Inventory
   ansible.builtin.template:
     src: inventory
-    dest: "vm_inventory/{{ vm_name }}"
+    dest: "{{ vm_inventory }}/{{ vm_name }}"
   when: state != "absent"
 
 - name: Stop VM
@@ -76,5 +76,5 @@
         state: absent
     - name: Delete from inventory
       ansible.builtin.file:
-        path: "vm_inventory/{{ vm_name }}"
+        path: "{{ vm_inventory }}/{{ vm_name }}"
         state: absent

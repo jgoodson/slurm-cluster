@@ -44,7 +44,7 @@
 ### Todo
 
 - CLOOOOUUUUUUUD
-    - Setup a cluster with ParallelCluster, Bath, or some other tool and integrate it with this one
+    - Setup a cluster with ParallelCluster, Batch, or some other tool and integrate it with this one
 - Automate more things - low priority
     - Promox setup
     - Router/utility box provisioning
@@ -58,4 +58,4 @@
     - Running the `install_freeipa.yml` playbook  again seems to fix this.
 
 ### Notes
-- Configless Slurm doesn't seem to bring nodes back up when they reboot?
+-
